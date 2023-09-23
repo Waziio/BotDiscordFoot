@@ -26,7 +26,8 @@ export function searchTeam(searchedTeam) {
     for (let team of teamsList) {
       const name = team.name.toLowerCase();
       const shortname = team.shortName ? team.shortName.toLowerCase() : null;
-      if (name === searchedTeam || shortname === searchedTeam) {
+      const tla = team.tla ? team.tla.toLowerCase() : null;
+      if (name === searchedTeam || shortname === searchedTeam || tla === searchedTeam) {
         res_team["id"] = team.id;
         res_team["name"] = team.name;
         res_team["shortName"] = team.shortName ? team.shortName : "";

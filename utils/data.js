@@ -1,21 +1,3 @@
-export const teams = {
-  barca: {
-    name: "FC Barcelona",
-    id: 81,
-    stade: "Camp Nou",
-  },
-  psg: {
-    name: "Paris Saint-Germain FC",
-    id: 524,
-    stade: "Parc des Princes",
-  },
-  nantes: {
-    name: "FC Nantes",
-    id: 543,
-    stade: "La Beaujoire",
-  },
-};
-
 export const competitions = {
   ligue1: {
     id: 2015,
