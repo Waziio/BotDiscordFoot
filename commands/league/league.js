@@ -6,28 +6,39 @@ import { formatDate } from "../../utils/utils.js";
 async function getAllMatches(message) {
   let response = "";
   const id_pl = competitions.pl.id;
-  const id_bundes = competitions.bundes.id;
+  const id_bundes = competitions.bundesliga.id;
   const id_liga = competitions.liga.id;
   const id_ligue1 = competitions.ligue1.id;
   const id_seria = competitions.seriea.id;
+  const id_ldc = competitions.ldc.id;
 
   const matches_pl = (await axios.get(`https://api.football-data.org/v4/matches/?competitions=${id_pl}`, { headers: { "X-Auth-Token": apiKey } })).data.matches;
   const matches_bundes = (await axios.get(`https://api.football-data.org/v4/matches/?competitions=${id_bundes}`, { headers: { "X-Auth-Token": apiKey } })).data.matches;
   const matches_liga = (await axios.get(`https://api.football-data.org/v4/matches/?competitions=${id_liga}`, { headers: { "X-Auth-Token": apiKey } })).data.matches;
   const matches_ligue1 = (await axios.get(`https://api.football-data.org/v4/matches/?competitions=${id_ligue1}`, { headers: { "X-Auth-Token": apiKey } })).data.matches;
   const matches_seria = (await axios.get(`https://api.football-data.org/v4/matches/?competitions=${id_seria}`, { headers: { "X-Auth-Token": apiKey } })).data.matches;
+  const matches_ldc = (await axios.get(`https://api.football-data.org/v4/matches/?competitions=${id_ldc}`, { headers: { "X-Auth-Token": apiKey } })).data.matches;
 
   const allLeagues = [
-    { name: "Premier League", matches: matches_pl, flag: ":england:" },
-    { name: "Bundesliga", matches: matches_bundes, flag: ":flag_de:" },
-    { name: "Liga", matches: matches_liga, flag: ":flag_es:" },
-    { name: "Ligue 1", matches: matches_ligue1, flag: ":flag_fr:" },
-    { name: "Serie A", matches: matches_seria, flag: ":flag_it:" },
+    { name: competitions.pl.name, matches: matches_pl, flag: competitions.pl.flag },
+    { name: competitions.bundesliga.name, matches: matches_bundes, flag: competitions.bundesliga.flag },
+    { name: competitions.liga.name, matches: matches_liga, flag: competitions.liga.flag },
+    { name: competitions.ligue1.name, matches: matches_ligue1, flag: competitions.ligue1.flag },
+    { name: competitions.seriea.name, matches: matches_seria, flag: competitions.seriea.flag },
+    { name: competitions.ldc.name, matches: matches_ldc, flag: competitions.ldc.flag },
   ];
 
   allLeagues.forEach((league) => {
-    const title = `Voici les matchs d'aujourd'hui en **${league.name}**  ${league.flag}\n\n`;
-    response += title;
+    // If no matches
+    if (league.matches.length == 0) {
+      const title = `Pas de match aujourd'hui en **${league.name}**  ${league.flag}\n\n`;
+      response += title;
+    } else {
+      const title = `Voici les matchs d'aujourd'hui en **${league.name}**  ${league.flag}\n\n`;
+      response += title;
+    }
+
+    // Display matches
     league.matches.forEach((match) => {
       const homeTeam = match.homeTeam.shortName;
       const awayTeam = match.awayTeam.shortName;

@@ -9,7 +9,7 @@ export const competitions = {
     name: "Premier League",
     flag: ":england:",
   },
-  bundes: {
+  bundesliga: {
     id: 2002,
     name: "Bundesliga",
     flag: ":flag_de:",
@@ -23,5 +23,10 @@ export const competitions = {
     id: 2014,
     name: "Liga",
     flag: ":flag_es:",
+  },
+  ldc: {
+    id: 2001,
+    name: "UEFA Champions League",
+    flag: ":flag_eu:",
   },
 };
