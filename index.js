@@ -1,7 +1,8 @@
-const jsonTeams = require("./teams.json");
-const axios = require("axios");
-const apiKey = "2325cbb19bfc4e9e992bce59eb31aa5b";
-const { Client, GatewayIntentBits, Message } = require("discord.js");
+import axios from "axios";
+import { Client, GatewayIntentBits } from "discord.js";
+import { formatDate, searchTeam } from "./utils/utils.js";
+import { competitions, teams } from "./utils/data.js";
+import { apiKey } from "./config.js";
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildVoiceStates],
@@ -13,7 +14,7 @@ client.once("ready", () => {
   console.log("Bot lancé");
 });
 
-client.on("messageCreate", (message) => {
+client.on("messageCreate", async (message) => {
   if (message.content.toLowerCase() === "et tout le virage chante") {
     message.reply("AAAAARBITREEEEE ENCULÉÉÉÉÉÉÉÉÉ");
   }
@@ -22,53 +23,78 @@ client.on("messageCreate", (message) => {
     message.reply("Le GOAT est Lionel Andrés Messi.");
   }
 
-  if (message.content.startsWith("!match")) {
-    let temp = message.content.split(" ");
-    let equipe = temp[1].toLowerCase();
-    let nomEquipe = equipe === "barca" ? jsonTeams.barca.name : equipe === "psg" ? jsonTeams.psg.name : jsonTeams.nantes.name;
-    let idTeam = equipe === "barca" ? jsonTeams.barca.id : equipe === "psg" ? jsonTeams.psg.id : jsonTeams.nantes.id;
-    let stade = equipe === "barca" ? jsonTeams.barca.stade : equipe === "psg" ? jsonTeams.psg.stade : jsonTeams.nantes.stade;
+  if (message.content.startsWith("!search")) {
+    let temp = message.content.split("-");
+    let searchedTeam = temp[1].toLowerCase();
+    let id;
+    // Search all teams
+    axios
+      .get("https://api.football-data.org/v4/teams?limit=1000&offset=0", {
+        headers: {
+          "X-Auth-Token": apiKey,
+        },
+      })
+      .then((res) => {
+        const teamsList = res.data.teams;
+        for (let team of teamsList) {
+          const name = team.name.toLowerCase();
+          const shortname = team.shortName ? team.shortName.toLowerCase() : null;
+          if (name === searchedTeam || shortname === searchedTeam) {
+            id = team.id;
+            break;
+          }
+        }
 
-    axios.get()
+        if (id) {
+          message.reply("Id de l'équipe : " + id);
+        } else {
+          message.reply("J'ai pas trouvé l'id de l'équipe");
+        }
+      });
   }
 
-  // if (message.content.startsWith("!match")) {
-  //   let temp = message.content.split("-");
-  //   let equipe = temp[1];
-  //   let nomEquipe = equipe === "barca" ? jsonTeams.barca.name : equipe === "psg" ? jsonTeams.psg.name : jsonTeams.nantes.name;
-  //   let idTeam = equipe === "barca" ? jsonTeams.barca.id : equipe === "psg" ? jsonTeams.psg.id : jsonTeams.nantes.id;
-  //   let stade = equipe === "barca" ? jsonTeams.barca.stade : equipe === "psg" ? jsonTeams.psg.stade : jsonTeams.nantes.stade;
+  if (message.content.startsWith("!match")) {
+    try {
+      const team = message.content.split("-")[1].trim();
+      const { id, name, shortName, stade } = await searchTeam(team);
+      const response = await axios.get(`https://api.football-data.org/v4/teams/${id}/matches?status=SCHEDULED`, { headers: { "X-Auth-Token": apiKey } });
+      let homeTeam = response.data.matches[0].homeTeam.name;
+      let awayTeam = response.data.matches[0].awayTeam.name;
+      let domicile = homeTeam == name ? `:round_pushpin:\t${stade}` : ":airplane: \tExtérieur";
+      let utcDate = response.data.matches[0].utcDate.split("T");
+      let { date, heure } = formatDate(utcDate);
+      message.reply("Le prochain match du **" + shortName + "** : \n\n:soccer:\t" + homeTeam + " - " + awayTeam + "\n\n:calendar:\t" + date + " à **" + heure + "**\n\n" + domicile);
+    } catch (err) {
+      message.reply("Une erreur est survenue ...");
+    }
+  }
 
-  //   axios
-  //     .get(`https://api.football-data.org/v4/teams/${idTeam}/matches?status=SCHEDULED`, {
-  //       headers: {
-  //         "X-Auth-Token": apiKey,
-  //       },
-  //     })
-  //     .then((response) => {
-  //       let homeTeam = response.data.matches[0].homeTeam.name;
-  //       let awayTeam = response.data.matches[0].awayTeam.name;
-  //       let domicile = homeTeam == nomEquipe ? `:round_pushpin: ${stade}` : ":airplane: Extérieur";
-  //       let utcDate = response.data.matches[0].utcDate.split("T");
-  //       console.log(utcDate)
-  //       let tabDate = utcDate[0].split("-");
-  //       console.log(tabDate)
-  //       let utcHeure = utcDate[1].replace("Z", "");
-  //       let tabHeure = utcHeure.split(":");
-  //       let heureBis = parseInt(tabHeure[0]);
-  //       heureBis++; // On ajoute une heure pour l'heure francaise
-  //       let dateFormat = new Date(tabDate[0], tabDate[1] - 1, tabDate[2], heureBis, tabHeure[1], tabHeure[2]);
-  //       console.log(dateFormat)
-  //       let minutes = dateFormat.getMinutes() < 10 ? "0" + dateFormat.getMinutes() : dateFormat.getMinutes();
-  //       let heure = dateFormat.getHours() + "h" + minutes;
-  //       let currentDate = new Date();
-  //       console.log(currentDate)
-  //       let date = dateFormat.getDate() === currentDate.getDate() ? "Aujourd'hui" : dateFormat.getDate() - 1 === currentDate.getDate() ? "Demain" :  dateFormat.toLocaleDateString();
-  //       console.log(date + "a")
+  // List of matches (today) by competition
+  if (message.content.startsWith("!compet")) {
+    const temp = message.content.split("-");
+    const compet = competitions[temp[1].replace(" ", "").toLowerCase()];
 
-  //       message.reply("Le prochain match du " + nomEquipe + " : \n\n:soccer: " + homeTeam + " - " + awayTeam + "\n\n:calendar: " + date + " à " + heure + "\n\n" + domicile);
-  //     });
-  // }
+    // If competition not found
+    if (!compet) {
+      message.reply("Je n'ai pas trouvé le championnat ...");
+    } else {
+      const { id, name, flag } = compet;
+      let response = `Voici les matchs d'aujourd'hui en **${name}**  ${flag}\n\n`;
+
+      const res = await axios.get(`https://api.football-data.org/v4/matches/?competitions=${id}`, { headers: { "X-Auth-Token": apiKey } });
+
+      const matches = res.data.matches;
+
+      matches.forEach((match) => {
+        const homeTeam = match.homeTeam.shortName;
+        const awayTeam = match.awayTeam.shortName;
+        const { heure } = formatDate(match.utcDate.split("T"));
+        response += `${homeTeam} - ${awayTeam} à **${heure}**\n`;
+      });
+
+      message.reply(response);
+    }
+  }
 });
 
 client.login(token);
