@@ -4,7 +4,6 @@ import team from "./team/team.js";
 const errorMessage = "Une erreur est survenue ...";
 
 export async function commands(message) {
-  console.log(message.author);
   if (message.content.toLowerCase() === "et tout le virage chante") {
     message.reply("AAAAARBITREEEEE ENCULÉÉÉÉÉÉÉÉÉ");
   }
@@ -25,7 +24,7 @@ export async function commands(message) {
     message.reply("Le GOAT est Lionel Andrés Messi.");
   }
 
-  if (message.author.name === "fuckkdiscoord") {
+  if (message.author.username === "fuckkdiscoord") {
     const insults = ["Enculé", "tg", "ntm", "fdp"];
     const randomIndex = Math.floor(Math.random() * insults.length);
     message.reply(insults[randomIndex]);
