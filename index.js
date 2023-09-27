@@ -1,6 +1,7 @@
 import { Client, GatewayIntentBits } from "discord.js";
 import { commands } from "./commands/index.js";
 import { startHealthCheckServer } from "./utils/utils.js";
+import express from "express";
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers, GatewayIntentBits.GuildVoiceStates],
@@ -15,5 +16,24 @@ client.once("ready", () => {
 client.on("messageCreate", commands);
 
 client.login(token);
+
+// Fonction pour démarrer le serveur de contrôle de santé
+function startHealthCheckServer() {
+  const app = express();
+  const port = 8080; // Port de contrôle de santé
+
+  // Health check endpoint
+  app.get("/health", (req, res) => {
+    if (client.isReady()) {
+      res.status(200).send("Bot is healthy");
+    } else {
+      res.status(500).send("Bot is not healthy");
+    }
+  });
+
+  app.listen(port, () => {
+    console.log(`Serveur de contrôle de santé en cours d'exécution sur le port ${port}`);
+  });
+}
 
 startHealthCheckServer();
