@@ -20,7 +20,7 @@ client.login(token);
 // Fonction pour démarrer le serveur de contrôle de santé
 function startHealthCheckServer() {
   const app = express();
-  const port = 8080; // Port de contrôle de santé
+  const port = 8000; // Port de contrôle de santé
 
   // Health check endpoint
   app.get("/health", (req, res) => {
