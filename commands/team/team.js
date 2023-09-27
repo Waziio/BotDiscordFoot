@@ -11,7 +11,7 @@ async function getNextMatch(message) {
   let domicile = homeTeam == name ? `:round_pushpin:\t${stade}` : ":airplane: \tExtérieur";
   let utcDate = response.data.matches[0].utcDate.split("T");
   let { date, heure } = formatDate(utcDate);
-  message.reply("Le prochain match du **" + shortName + "** : \n\n:soccer:\t" + homeTeam + " - " + awayTeam + "\n\n:calendar:\t" + date + " à **" + heure + "**\n\n" + domicile);
+  message.reply("Le prochain match du **" + name + "** : \n\n:soccer:\t" + homeTeam + " - " + awayTeam + "\n\n:calendar:\t" + date + " à **" + heure + "**\n\n" + domicile);
 }
 
 export default { getNextMatch };
