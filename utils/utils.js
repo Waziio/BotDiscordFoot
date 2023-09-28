@@ -12,7 +12,6 @@ export function formatDate(utcDate) {
   let heure = dateFormat.getHours() + "h" + minutes;
   let currentDate = new Date();
   let date = dateFormat.getDate() === currentDate.getDate() ? "Aujourd'hui" : dateFormat.getDate() - 1 === currentDate.getDate() ? "Demain" : dateFormat.toLocaleDateString("fr-FR");
-  console.log(date);
   return { date: date, heure: heure };
 }
 
