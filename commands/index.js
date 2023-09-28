@@ -44,7 +44,6 @@ export async function commands(message) {
     try {
       league.getMatchesByLeague(message);
     } catch (err) {
-      console.log(err.message);
       message.reply(errorMessage);
     }
   }
@@ -54,7 +53,6 @@ export async function commands(message) {
     try {
       league.getAllMatches(message);
     } catch (err) {
-      console.log(err.message);
       message.reply(errorMessage);
     }
   }

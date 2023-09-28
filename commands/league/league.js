@@ -31,20 +31,53 @@ async function getAllMatches(message) {
   allLeagues.forEach((league) => {
     // If no matches
     if (league.matches.length == 0) {
-      const title = `Pas de match aujourd'hui en **${league.name}**  ${league.flag}\n\n`;
+      const title = `Pas de match aujourd'hui en **${league.name}**  ${league.flag}\n`;
       response += title;
     } else {
-      const title = `Voici les matchs d'aujourd'hui en **${league.name}**  ${league.flag}\n\n`;
+      const title = `Voici les matchs d'aujourd'hui en **${league.name}**  ${league.flag}\n`;
       response += title;
     }
 
-    // Display matches
-    league.matches.forEach((match) => {
-      const homeTeam = match.homeTeam.shortName;
-      const awayTeam = match.awayTeam.shortName;
-      const { heure } = formatDate(match.utcDate.split("T"));
-      response += `${homeTeam} - ${awayTeam} à **${heure}**\n`;
-    });
+    const matchesInPlay = league.matches.filter((match) => match.status === "IN_PLAY" || match.status === "PAUSED");
+    const matchesFinished = league.matches.filter((match) => match.status === "FINISHED");
+    const matchesScheduled = league.matches.filter((match) => match.status === "TIMED");
+
+    let needSpace = false;
+
+    if (matchesFinished.length > 0) {
+      needSpace = true;
+      response += "**Finis** : \n";
+      matchesFinished.forEach((match) => {
+        const homeTeam = match.homeTeam.shortName;
+        const awayTeam = match.awayTeam.shortName;
+        const homeTeamScore = match.score.fullTime.home;
+        const awayTeamScore = match.score.fullTime.away;
+        response += `${homeTeam}\t**${homeTeamScore}** - **${awayTeamScore}**\t${awayTeam}\n`;
+      });
+    }
+
+    if (matchesInPlay.length > 0) {
+      response += needSpace ? "**En cours** : \n" : "**En cours** : \n";
+      needSpace = true;
+      matchesInPlay.forEach((match) => {
+        const homeTeam = match.homeTeam.shortName;
+        const awayTeam = match.awayTeam.shortName;
+        const homeTeamScore = match.score.fullTime.home;
+        const awayTeamScore = match.score.fullTime.away;
+        response += `${homeTeam}\t**${homeTeamScore}** - **${awayTeamScore}**\t${awayTeam}\n`;
+      });
+    }
+
+    if (matchesScheduled.length > 0) {
+      response += needSpace ? "**À venir** : \n" : "**À venir** : \n";
+      matchesScheduled.forEach((match) => {
+        const homeTeam = match.homeTeam.shortName;
+        const awayTeam = match.awayTeam.shortName;
+        const { heure } = formatDate(match.utcDate.split("T"));
+        response += `${homeTeam} - ${awayTeam} à **${heure}**\n`;
+      });
+    }
+
     response += "\n";
   });
 
@@ -60,16 +93,48 @@ async function getMatchesByLeague(message) {
     message.reply("Je n'ai pas trouvé le championnat ...");
   } else {
     const { id, name, flag } = compet;
-    let response = `Voici les matchs d'aujourd'hui en **${name}**  ${flag}\n\n`;
 
     const matches = (await axios.get(`https://api.football-data.org/v4/matches/?competitions=${id}`, { headers: { "X-Auth-Token": apiKey } })).data.matches;
+    const matchesInPlay = matches.filter((match) => match.status === "IN_PLAY" || match.status === "PAUSED");
+    const matchesFinished = matches.filter((match) => match.status === "FINISHED");
+    const matchesScheduled = matches.filter((match) => match.status === "TIMED");
 
-    matches.forEach((match) => {
-      const homeTeam = match.homeTeam.shortName;
-      const awayTeam = match.awayTeam.shortName;
-      const { heure } = formatDate(match.utcDate.split("T"));
-      response += `${homeTeam} - ${awayTeam} à **${heure}**\n`;
-    });
+    let response = matches.length > 0 ? `Voici les matchs d'aujourd'hui en **${name}**  ${flag}\n\n` : `Pas de match aujourd'hui en **${name}**  ${flag}\n`;
+    let needSpace = false;
+
+    if (matchesFinished.length > 0) {
+      needSpace = true;
+      response += "\n**Finis** : \n";
+      matchesFinished.forEach((match) => {
+        const homeTeam = match.homeTeam.shortName;
+        const awayTeam = match.awayTeam.shortName;
+        const homeTeamScore = match.score.fullTime.home;
+        const awayTeamScore = match.score.fullTime.away;
+        response += `${homeTeam}\t**${homeTeamScore}** - **${awayTeamScore}**\t${awayTeam}\n`;
+      });
+    }
+
+    if (matchesInPlay.length > 0) {
+      response += needSpace ? "\n**En cours** : \n" : "**En cours** : \n";
+      needSpace = true;
+      matchesInPlay.forEach((match) => {
+        const homeTeam = match.homeTeam.shortName;
+        const awayTeam = match.awayTeam.shortName;
+        const homeTeamScore = match.score.fullTime.home;
+        const awayTeamScore = match.score.fullTime.away;
+        response += `${homeTeam}\t**${homeTeamScore}** - **${awayTeamScore}**\t${awayTeam}\n`;
+      });
+    }
+
+    if (matchesScheduled.length > 0) {
+      response += needSpace ? "\n**À venir** : \n" : "**À venir** : \n";
+      matchesScheduled.forEach((match) => {
+        const homeTeam = match.homeTeam.shortName;
+        const awayTeam = match.awayTeam.shortName;
+        const { heure } = formatDate(match.utcDate.split("T"));
+        response += `${homeTeam} - ${awayTeam} à **${heure}**\n`;
+      });
+    }
 
     message.reply(response);
   }
