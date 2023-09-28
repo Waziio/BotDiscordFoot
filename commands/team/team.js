@@ -4,7 +4,7 @@ import { apiKey } from "../../config.js";
 
 async function getNextMatch(message) {
   const team = message.content.split("-")[1].trim();
-  const { id, name, shortName, stade } = await searchTeam(team);
+  const { id, name, stade } = await searchTeam(team);
   const response = await axios.get(`https://api.football-data.org/v4/teams/${id}/matches?status=SCHEDULED`, { headers: { "X-Auth-Token": apiKey } });
   let homeTeam = response.data.matches[0].homeTeam.name;
   let awayTeam = response.data.matches[0].awayTeam.name;
