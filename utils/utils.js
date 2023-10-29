@@ -6,7 +6,7 @@ export function formatDate(utcDate) {
   let utcHeure = utcDate[1].replace("Z", "");
   let tabHeure = utcHeure.split(":");
   let heureBis = parseInt(tabHeure[0]);
-  heureBis += 2; // On ajoute une heure pour l'heure francaise
+  heureBis += 1; // On ajoute une heure pour l'heure francaise
   let dateFormat = new Date(tabDate[0], tabDate[1] - 1, tabDate[2], heureBis, tabHeure[1], tabHeure[2]);
   let minutes = dateFormat.getMinutes() < 10 ? "0" + dateFormat.getMinutes() : dateFormat.getMinutes();
   let heure = dateFormat.getHours() + "h" + minutes;
