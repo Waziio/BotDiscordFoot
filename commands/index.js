@@ -4,30 +4,9 @@ import team from "./team/team.js";
 const errorMessage = "Une erreur est survenue ...";
 
 export async function commands(message) {
-  if (message.content.toLowerCase() === "et tout le virage chante") {
-    message.reply("AAAAARBITREEEEE ENCULÉÉÉÉÉÉÉÉÉ");
-  }
-
-  if (message.content.includes("ravus")) {
-    if (!message.author.bot) {
-      message.reply("https://tenor.com/view/ravusssss-ravus-ravusss-atroce-effrayant-gif-3982462483753468734");
-    }
-  }
-
-  if (message.content.includes("samuel")) {
-    if (!message.author.bot) {
-      message.reply("https://tenor.com/view/samuel-funny-dog-smile-happy-gif-17384183");
-    }
-  }
 
   if (message.content === "!goat") {
     message.reply("Le GOAT est Lionel Andrés Messi.");
-  }
-
-  if (message.author.username === "fuckkdiscoord") {
-    const insults = ["Enculé", "tg", "ntm", "fdp"];
-    const randomIndex = Math.floor(Math.random() * insults.length);
-    message.reply(insults[randomIndex]);
   }
 
   if (message.content.startsWith("!match-")) {
