@@ -3,30 +3,35 @@ import { competitions } from "../../utils/data.js";
 import { apiKey } from "../../config.js";
 import { formatDate } from "../../utils/utils.js";
 
+async function getMatchesByCompetition(competitionId) {
+  const url = `https://api.football-data.org/v4/matches/?competitions=${competitionId}`;
+  const response = await axios.get(url, { headers: { "X-Auth-Token": apiKey } });
+  return response.data.matches;
+}
+
 async function getAllMatches(message) {
-  let response = "";
-  const id_pl = competitions.pl.id;
-  const id_bundes = competitions.bundesliga.id;
-  const id_liga = competitions.liga.id;
-  const id_ligue1 = competitions.ligue1.id;
-  const id_seria = competitions.seriea.id;
-  const id_ldc = competitions.ldc.id;
-
-  const matches_pl = (await axios.get(`https://api.football-data.org/v4/matches/?competitions=${id_pl}`, { headers: { "X-Auth-Token": apiKey } })).data.matches;
-  const matches_bundes = (await axios.get(`https://api.football-data.org/v4/matches/?competitions=${id_bundes}`, { headers: { "X-Auth-Token": apiKey } })).data.matches;
-  const matches_liga = (await axios.get(`https://api.football-data.org/v4/matches/?competitions=${id_liga}`, { headers: { "X-Auth-Token": apiKey } })).data.matches;
-  const matches_ligue1 = (await axios.get(`https://api.football-data.org/v4/matches/?competitions=${id_ligue1}`, { headers: { "X-Auth-Token": apiKey } })).data.matches;
-  const matches_seria = (await axios.get(`https://api.football-data.org/v4/matches/?competitions=${id_seria}`, { headers: { "X-Auth-Token": apiKey } })).data.matches;
-  const matches_ldc = (await axios.get(`https://api.football-data.org/v4/matches/?competitions=${id_ldc}`, { headers: { "X-Auth-Token": apiKey } })).data.matches;
-
-  const allLeagues = [
-    { name: competitions.pl.name, matches: matches_pl, flag: competitions.pl.flag },
-    { name: competitions.bundesliga.name, matches: matches_bundes, flag: competitions.bundesliga.flag },
-    { name: competitions.liga.name, matches: matches_liga, flag: competitions.liga.flag },
-    { name: competitions.ligue1.name, matches: matches_ligue1, flag: competitions.ligue1.flag },
-    { name: competitions.seriea.name, matches: matches_seria, flag: competitions.seriea.flag },
-    { name: competitions.ldc.name, matches: matches_ldc, flag: competitions.ldc.flag },
+  const compets = [
+    { id: competitions.pl.id, name: competitions.pl.name, flag: competitions.pl.flag },
+    { id: competitions.bundesliga.id, name: competitions.bundesliga.name, flag: competitions.bundesliga.flag },
+    { id: competitions.liga.id, name: competitions.liga.name, flag: competitions.liga.flag },
+    { id: competitions.ligue1.id, name: competitions.ligue1.name, flag: competitions.ligue1.flag },
+    { id: competitions.seriea.id, name: competitions.seriea.name, flag: competitions.seriea.flag },
+    { id: competitions.ldc.id, name: competitions.ldc.name, flag: competitions.ldc.flag },
   ];
+
+  const allLeagues = await Promise.all(
+    compets.map(async (compet) => {
+      const matches = await getMatchesByCompetition(compet.id);
+      return {
+        id: compet.id,
+        name: compet.name,
+        flag: compet.flag,
+        matches: matches,
+      };
+    })
+  );
+
+  let response = "";
 
   allLeagues.forEach((league) => {
     // If no matches
